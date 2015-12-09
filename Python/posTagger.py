@@ -5,7 +5,9 @@ from collections import OrderedDict
 from collections import defaultdict
 from collections import Counter
 from nltk import word_tokenize
+from nltk import sent_tokenize
 from nltk import pos_tag, map_tag
+import numpy as np
 import sys
 import os
 
@@ -14,6 +16,19 @@ import os
 #-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
 #UTIL FUNCTIONS
+def getSentenceFeatures(fileLines):
+    itr = 0
+    sentFeat = []
+    for line in fileLines:
+        sentences = sent_tokenize(line)
+        wordsPerSent = np.array([len(word_tokenize(sentence)) for sentence in sentences])
+        
+        sentFeat.append([])
+        sentFeat[itr].append(wordsPerSent.mean())
+        sentFeat[itr].append(wordsPerSent.std())
+        itr += 1
+    return sentFeat
+
 def loadFileLines(filepath):
     fileInstance = open(filepath)
     fileLines = []
@@ -38,6 +53,23 @@ def saveListToFile(fileName, listName):
     
     return True
 
+def printList(listName,limit):
+    for itr in range(0,limit):
+        print listName[itr]
+        
+    return
+
+def printDict(dictName,limit):
+    itr = 0
+    for key,value in dictName.items():
+        itr += 1
+        print key + " : " + str(value)
+
+        if(itr == limit):
+            break
+        
+    return
+
 #-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
 #MAIN - TESTING THE CODE FROM MAIN
@@ -45,7 +77,8 @@ def saveListToFile(fileName, listName):
 if __name__ == "__main__":
     print("=====ASSIGNMENT STARTED=====")
 
-    #"""
+    # Parts of Speech Tagger
+    """
     fileName = "actualWords.txt"
     allWords = loadFileLines(fileName)
     
@@ -58,7 +91,10 @@ if __name__ == "__main__":
     fileName = "posTags.txt"
     saveListToFile(fileName, simplifiedTags)
     print("===== SAVED POS FILE ===== ")
-    
+    """
+#-----------------------------------------------------------------------    
+    # Word Lengths
+    """
     fileName = "actualWords.txt"
     allWords = loadFileLines(fileName)
     wordsLen = []
@@ -69,4 +105,21 @@ if __name__ == "__main__":
     fileName = "wordLengths.txt"
     saveListToFile(fileName, wordsLen)
     print("===== SAVED LENGTH FILE ===== ")
+    """
+#-----------------------------------------------------------------------
+    # Average number of words per sentence
+    # Sentence length dev
     
+    trainFileName = 'project_articles_train'
+    testFileName = 'project_articles_test'
+
+    fileLines = loadFileLines(trainFileName)
+    trainSentFeat = getSentenceFeatures(fileLines)
+    fileName = "trainSentFeat.txt"
+    saveListToFile(fileName, trainSentFeat)
+    
+    fileLines = loadFileLines(testFileName)
+    testSentFeat = getSentenceFeatures(fileLines)
+    fileName = "testSentFeat.txt"
+    saveListToFile(fileName, testSentFeat)
+    print("===== SAVED LENGTH FILE ===== ")

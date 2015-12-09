@@ -17,8 +17,21 @@ import os
 
 #-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
+def  get_idf(corpus):
+    idf = Counter()
+    courpusLength = len(corpus)
+
+    for excerpt in corpus:
+        idf.update(list(set(excerpt)))
+
+    for df in idf:
+        idf[df]=log(courpusLength/idf[df])
+
+    return idf
+
 def getTopWordsIndices(fileLines, featureSpaceDict, limit):    
     topWordsDict = OrderedDict(Counter(flatten(fileLines)).most_common(limit))
+    printDict(topWordsDict,5)
     topWordsIndices = []
 
     for key in topWordsDict:
@@ -133,8 +146,10 @@ if __name__ == "__main__":
     allFileLines.extend(trainFileLines)
     allFileLines.extend(testFileLines)
     
+    """
     featureSpaceDict = createFeatureSpace(allFileLines)
     featureSpaceList = [None] * len(featureSpaceDict)
+
     for key,value in featureSpaceDict.items():
         featureSpaceList[int(value)] = key
     outputFileName = 'actualWords.txt'
@@ -151,6 +166,19 @@ if __name__ == "__main__":
     outputFileName = 'topWordsIndices.txt'
     saveListToFile(outputFileName,topWordsIndices);
     print("=====TOP WORDS INDICES CREATED=====")
+    """
+
+    fileName = 'actualWords.txt'
+    dummmyWords,actualWords = loadFileLines(fileName)
+    idf = get_idf(allFileLines)
+    idfOrdered = []
+    
+    for word in actualWords:
+        idfOrdered.append(idf[word])
+        
+    outputFileName = 'wordIdfs.txt'
+    saveListToFile(outputFileName,idfOrdered);
+    
     
     #print len(featureSpaceDict)
     #print len(topWordsIndices)
