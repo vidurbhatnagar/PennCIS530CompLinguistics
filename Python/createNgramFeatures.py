@@ -93,7 +93,10 @@ def createFeatureVectors(fileLines, featureSpaceDict, outputFileName, n, unk_dic
         n_gram_counts = get_ngram_counts_per_excerpt(excerpt,n, unk_dict);		
 
         for n_gram in n_gram_counts: 
-		if ( n_gram in featureSpaceDict ):		
+		if ( n_gram in featureSpaceDict ):			
+			#print str(n_gram) + '\t' + str(n_gram_counts[n_gram]);
+                	#print 'In!!!';
+			#print str(featureSpaceDict[n_gram]);
 			featureVector[int(featureSpaceDict[n_gram])] = n_gram_counts[n_gram]
 	    
         outputFile.write(unicode(str(featureVector).replace('[','').replace(']','')).encode('utf8'))
@@ -103,8 +106,7 @@ def createFeatureVectors(fileLines, featureSpaceDict, outputFileName, n, unk_dic
     return True
 
 def getTopNgrams(n_gram_counts,limit):
-   n_grams_top = n_gram_counts.most_common(limit);
-   n_grams_top = [n_gram_count[0] for n_gram_count in n_grams_top];
+   n_grams_top = n_gram_counts.most_common(limit); 
    return n_grams_top;
 
 def getTopNgramIndices(n_grams_top,featureSpaceDict):
@@ -114,8 +116,9 @@ def getTopNgramIndices(n_grams_top,featureSpaceDict):
 
     return topNgramIndices;
 	
-def createFeatureSpace(n_grams):
-    return OrderedDict({x:i for i,x in enumerate(list(set(n_grams)))});
+def createFeatureSpace(n_gram_counts):
+    n_grams = [n_gram_count[0] for n_gram_count in n_gram_counts];
+    return OrderedDict({x:i for i,x in enumerate(n_grams)});
 
 def  wordTokenize(line):
    return word_tokenize(line.lower())
@@ -164,6 +167,17 @@ def saveListToFile(fileName, listName):
 
     outputFile.close()
     
+    return True
+
+def saveNgramsToFile(fileName, listName):
+    outputFile = open(fileName,'wb')
+
+    for key in listName:	
+        outputFile.write(str(unicode(key[0][0]).encode('utf8')) + ',' + str(unicode(key[0][1]).encode('utf8')) + '\t' + str(key[1]));
+        outputFile.write('\n')
+
+    outputFile.close()
+
     return True
 
 def printList(listName,limit):
@@ -222,16 +236,16 @@ if __name__ == "__main__":
 	
     # Get n_grams for creating feature space
     # top n ngrams	 
-    n_grams_top = getTopNgrams(n_gram_counts,featureSpaceLimit);  
+    n_grams_top = getTopNgrams(n_gram_counts,featureSpaceLimit); 
 
     # Create feature space
-    featureSpaceDict = createFeatureSpace(n_grams_top);    
+    featureSpaceDict = createFeatureSpace(n_grams_top);     
     
-    featureSpaceList = [None] * len(featureSpaceDict) 
-    for key,value in featureSpaceDict.items():
-	featureSpaceList[int(value)] = key
+    #featureSpaceList = [None] * len(featureSpaceDict) 
+    #for key,value in featureSpaceDict.items():
+    # 	featureSpaceList[int(value)] = key
     outputFileName = 'n_grams.txt'
-    saveListToFile(outputFileName,featureSpaceList);
+    saveNgramsToFile(outputFileName,n_grams_top);
     print("=====FEATURE SPACE CREATED=====")
 
     # Save Top n-grams indices
