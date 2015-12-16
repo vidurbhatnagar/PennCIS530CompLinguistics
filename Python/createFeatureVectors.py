@@ -17,6 +17,14 @@ import os
 
 #-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
+def getIndicesForWords(FVWords, words):
+    wordsIndices = []
+    for word in words:
+        if word in FVWords:
+            wordsIndices.append(FVWords.index(word)+1)
+        
+    return wordsIndices
+
 def  get_idf(corpus):
     idf = Counter()
     courpusLength = len(corpus)
@@ -42,6 +50,26 @@ def getTopWordsIndices(fileLines, featureSpaceDict, limit):
 #-----------------------------------------------------------------------
 #-----------------------------------------------------------------------
 #UTIL FUNCTIONS
+def createDiffFiles(inFile,outFile1,outFile2):
+    inF = open(inFile)
+    outF1 = open(outFile1,'wb')
+    outF2 = open(outFile2,'wb')
+    while True:
+        line = inF.readline().decode('utf8')
+        if not line:
+            inF.close()
+            outF1.close()
+            outF2.close()
+            break
+
+        lineParts = line.split("\t")
+        if(int(lineParts[1]) == 0):
+            outF1.write(str(unicode(lineParts[0]+'\n').encode('utf8')).replace('[','').replace(']',''))
+        else:
+            outF2.write(str(unicode(lineParts[0]+'\n').encode('utf8')).replace('[','').replace(']',''))
+
+    return
+
 def createFeatureVectors(fileLines, featureSpaceDict, outputFileName):
     outputFile = open(outputFileName,'wb')
 
@@ -130,6 +158,8 @@ def printDict(dictName,limit):
 if __name__ == "__main__":
     print("=====ASSIGNMENT STARTED=====")
 
+##LOADING DATA   
+    """
     trainFileName = 'project_articles_train'
     #trainFileName = 'trainDummy'
     trainFileLines, trainFileTags = loadFileLines(trainFileName)
@@ -141,11 +171,13 @@ if __name__ == "__main__":
     #testFileName = 'testDummy'
     testFileLines, testFileTags = loadFileLines(testFileName)
     print("=====TESTING DATA LOADED=====")
-
+    
     allFileLines = []
     allFileLines.extend(trainFileLines)
     allFileLines.extend(testFileLines)
-    
+    """
+
+##CREATING FEATURE SPACE   
     """
     featureSpaceDict = createFeatureSpace(allFileLines)
     featureSpaceList = [None] * len(featureSpaceDict)
@@ -161,13 +193,18 @@ if __name__ == "__main__":
 
     featureVectorList = createFeatureVectors(testFileLines, featureSpaceDict,'testX.txt')
     print("=====TEST FEATURE VECTORS CREATED=====")
-
+    """
+    
+##TOP WORDS INDICS   
+    """
     topWordsIndices = getTopWordsIndices(allFileLines, featureSpaceDict, len(featureSpaceDict))
     outputFileName = 'topWordsIndices.txt'
     saveListToFile(outputFileName,topWordsIndices);
     print("=====TOP WORDS INDICES CREATED=====")
     """
 
+##TFIDF VALUE FILE
+    """
     fileName = 'actualWords.txt'
     dummmyWords,actualWords = loadFileLines(fileName)
     idf = get_idf(allFileLines)
@@ -178,8 +215,27 @@ if __name__ == "__main__":
         
     outputFileName = 'wordIdfs.txt'
     saveListToFile(outputFileName,idfOrdered);
-    
-    
+    """
+
+##SEPARATING TEXT INTO 2 FILES
+    """
+    inFile = 'project_articles_train'
+    outFile1 = 'nonGina.txt'
+    outFile2 = 'gina.txt'
+
+    createDiffFiles(inFile,outFile1,outFile2)
+    """
+
+##CREATING INDICES FOR CHISQ RANKED WORDS
+    fileName = 'actualWords.txt'
+    dummmyWords,actualWords = loadFileLines(fileName)
+    fileName = 'rankedChiWords.txt'
+    dummmyWords,chiWords = loadFileLines(fileName)
+
+    wordIndices = getIndicesForWords(actualWords, chiWords)
+    saveListToFile('rankedChiIndices.txt',wordIndices)
+
+    #printList(wordIndices,10)
     #print len(featureSpaceDict)
     #print len(topWordsIndices)
     #printDict(featureSpaceDict, len(featureSpaceDict))
